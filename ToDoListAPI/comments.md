@@ -1,0 +1,1 @@
+A self-contained REST API implementation based on Eve. CRUD is present; GET, POST, PUT/PATCH, and DELETE methods are supported; it operates over HTTP and communicates via JSON. Data is validated via Cerberus before being written to the database (MongoDB).
