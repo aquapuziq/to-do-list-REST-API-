@@ -18,12 +18,15 @@ def get_one(task_id):
     del task["_id"]
     return task
 
+
 def create(data):
+    data.setdefault("status", "todo")
     result = collection.insert_one(data)
     data["id"] = str(result.inserted_id)
     return data
 
 def update(task_id, data):
+    data.setdefault("status", "todo")
     collection.update_one(
         {"_id": ObjectId(task_id)},
         {"$set": data}

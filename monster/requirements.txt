@@ -1,0 +1,9 @@
+Django>=5.0
+djangorestframework
+mongoengine>=0.29.0
+pymongo>=4.6.0
+django-redis
+redis
+celery
+django-prometheus
+gunicorn

@@ -1,12 +1,20 @@
-from djongo import models
+from mongoengine import Document, StringField, DateTimeField
+from datetime import datetime
 
-class Task(models.Model):
-    STATUS = (
-        ('todo', 'To Do'),
-        ('in_progress', 'In Progress'),
-        ('done', 'Done'),
+
+class Task(Document):
+    STATUS_CHOICES = ("todo", "in_progress", "done")
+
+    title = StringField(required = True, max_length = 200)
+    description = StringField()
+    status = StringField(
+        required = True,
+        choices = STATUS_CHOICES,
+        default = "todo"
     )
+    created_at = DateTimeField(default = datetime.utcnow)
 
-    title = models.CharField(max_length = 300)
-    description = models.TextField(blank = True)
-    status = models.CharField(max_length = 20, choices=STATUS)
+    meta = {
+        "collection": "tasks",
+        "ordering": ["-created_at"]
+    }

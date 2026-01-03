@@ -1,59 +1,71 @@
 from pathlib import Path
+from mongoengine import connect
 from pymongo import MongoClient
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'dev-secret-key'
+
+SECRET_KEY = "dev-secret-key"
 DEBUG = True
 ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'rest_framework',
-    'django_prometheus',
-    'tasks',
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "rest_framework",
+    "django_prometheus",
+    "tasks",
 ]
+
+# MONGO_CLIENT = MongoClient("mongodb://localhost:27017")
+# MONGO_DB = MONGO_CLIENT["tododb"]
+# TASKS_COLLECTION = MONGO_DB["tasks"]
 
 MIDDLEWARE = [
-    'django_prometheus.middleware.PrometheusBeforeMiddleware',
-    'django_prometheus.middleware.PrometheusAfterMiddleware',
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
-ROOT_URLCONF = 'ToDoListAPI_Django.urls'
-WSGI_APPLICATION = 'ToDoListAPI_Django.wsgi.application'
+ROOT_URLCONF = "ToDoListAPI_Django.urls"
+WSGI_APPLICATION = "ToDoListAPI_Django.wsgi.application"
 
-MONGO_CLIENT = MongoClient("mongodb://localhost:27017")
-MONGO_DB = MONGO_CLIENT["tododb"]
+MONGO_URI = os.getenv(
+    "MONGO_URI",
+    "mongodb://host.docker.internal:27017/tododb"
+)
+
+connect(
+    host = MONGO_URI,
+    uuidRepresentation = "standard"
+)
+
+MONGO_CLIENT = MongoClient(MONGO_URI)
+MONGO_DB = MONGO_CLIENT.get_database()
 TASKS_COLLECTION = MONGO_DB["tasks"]
+
+REDIS_URL = os.getenv(
+    "REDIS_URL",
+    "redis://redis:6379/0"
+)
 
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "IGNORE_EXCEPTIONS": True,
         }
     }
 }
+
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
     ),
-}
-
-LOGGING = {
-    "version": 1,
-    "handlers": {
-        "file": {
-            "class": "logging.FileHandler",
-            "filename": "app.log",
-        },
-    },
-    "root": {
-        "handlers": ["file"],
-        "level": "INFO",
-    },
-
 }

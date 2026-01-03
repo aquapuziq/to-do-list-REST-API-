@@ -18,7 +18,7 @@ class TaskList(APIView):
 
     def post(self, request):
         serializer = TaskSerializer(data = request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception = True)
 
         task = repo.create(serializer.validated_data)
 

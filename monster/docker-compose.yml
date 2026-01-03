@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: todo_api
+    command: gunicorn ToDoListAPI_Django.wsgi:application --bind 0.0.0.0:8000 --workers 1
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/tododb
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - mongo
+      - redis
+    restart: always
+
+  mongo:
+    image: mongo:7
+    container_name: todo_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+
+  redis:
+    image: redis:7
+    container_name: todo_redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  celery:
+    user: "1000:1000"
+    build: .
+    container_name: todo_celery
+    command: celery -A ToDoListAPI_Django.celery_line worker -l info
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/tododb
+      - REDIS_URL=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=ToDoListAPI_Django.settings
+    depends_on:
+      - redis
+      - mongo
+    volumes:
+      - .:/app
+    restart: "no"
+
+volumes:
+  mongo_data:
