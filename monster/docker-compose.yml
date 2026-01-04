@@ -32,20 +32,17 @@ services:
     restart: always
 
   celery:
-    user: "1000:1000"
     build: .
     container_name: todo_celery
-    command: celery -A ToDoListAPI_Django.celery_line worker -l info
+    command: celery -A ToDoListAPI_Django worker -l info
     environment:
+      - DJANGO_SETTINGS_MODULE=ToDoListAPI_Django.settings
       - MONGO_URI=mongodb://mongo:27017/tododb
       - REDIS_URL=redis://redis:6379/0
-      - DJANGO_SETTINGS_MODULE=ToDoListAPI_Django.settings
     depends_on:
       - redis
       - mongo
-    volumes:
-      - .:/app
-    restart: "no"
+    restart: unless-stopped
 
 volumes:
   mongo_data:

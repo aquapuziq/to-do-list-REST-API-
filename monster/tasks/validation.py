@@ -5,5 +5,5 @@ class TaskSerializer(serializers.Serializer):
     title = serializers.CharField()
     description = serializers.CharField(required = False, allow_blank = True)
     status = serializers.ChoiceField(
-        choices = ["todo", "in_progress", "done"]
+        choices=["todo", "in_progress", "done"]
     )

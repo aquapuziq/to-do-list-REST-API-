@@ -1,13 +1,12 @@
 from pathlib import Path
 from mongoengine import connect
-from pymongo import MongoClient
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "dev-secret-key"
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "django.contrib.auth",
@@ -32,17 +31,13 @@ WSGI_APPLICATION = "ToDoListAPI_Django.wsgi.application"
 
 MONGO_URI = os.getenv(
     "MONGO_URI",
-    "mongodb://host.docker.internal:27017/tododb"
+    "mongodb://mongo:27017/tododb"
 )
 
 connect(
-    host = MONGO_URI,
-    uuidRepresentation = "standard"
+    host=MONGO_URI,
+    uuidRepresentation="standard"
 )
-
-MONGO_CLIENT = MongoClient(MONGO_URI)
-MONGO_DB = MONGO_CLIENT.get_database()
-TASKS_COLLECTION = MONGO_DB["tasks"]
 
 REDIS_URL = os.getenv(
     "REDIS_URL",

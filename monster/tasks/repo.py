@@ -1,37 +1,65 @@
-from django.conf import settings
-from bson import ObjectId
+from .models import Task
+from mongoengine.errors import DoesNotExist
 
-collection = settings.TASKS_COLLECTION
 
 def get_all():
-    tasks = list(collection.find())
-    for t in tasks:
-        t["id"] = str(t["_id"])
-        del t["_id"]
-    return tasks
+    return [
+        {
+            "id": str(task.id),
+            "title": task.title,
+            "description": task.description,
+            "status": task.status,
+            #"created_at": task.created_at,
+        }
+        for task in Task.objects.all()
+    ]
+
 
 def get_one(task_id):
-    task = collection.find_one({"_id": ObjectId(task_id)})
-    if not task:
+    try:
+        task = Task.objects.get(id = task_id)
+    except DoesNotExist:
         return None
-    task["id"] = str(task["_id"])
-    del task["_id"]
-    return task
+
+    return {
+        "id": str(task.id),
+        "title": task.title,
+        "description": task.description,
+        "status": task.status,
+        #"created_at": task.created_at,
+    }
 
 
 def create(data):
-    data.setdefault("status", "todo")
-    result = collection.insert_one(data)
-    data["id"] = str(result.inserted_id)
-    return data
+    task = Task(**data)
+    task.save()
+
+    return {
+        "id": str(task.id),
+        "title": task.title,
+        "description": task.description,
+        "status": task.status,
+        #"created_at": task.created_at,
+    }
+
 
 def update(task_id, data):
-    data.setdefault("status", "todo")
-    collection.update_one(
-        {"_id": ObjectId(task_id)},
-        {"$set": data}
-    )
+    try:
+        task = Task.objects.get(id = task_id)
+    except DoesNotExist:
+        return None
+
+    for field, value in data.items():
+        setattr(task, field, value)
+
+    task.save()
     return get_one(task_id)
 
+
 def delete(task_id):
-    collection.delete_one({"_id": ObjectId(task_id)})
+    try:
+        task = Task.objects.get(id = task_id)
+        task.delete()
+        return True
+    except DoesNotExist:
+        return False

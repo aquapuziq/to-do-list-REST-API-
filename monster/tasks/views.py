@@ -40,11 +40,16 @@ class TaskDetail(APIView):
         serializer.is_valid(raise_exception = True)
 
         task = repo.update(task_id, serializer.validated_data)
-        cache.delete("tasks")
+        return Response(task)
+
+    def patch(self, request, task_id):
+        serializer = TaskSerializer(data = request.data)
+        serializer.is_valid(raise_exception = True)
+
+        task = repo.update(task_id, serializer.validated_data)
         return Response(task)
 
     def delete(self, request, task_id):
         repo.delete(task_id)
-        cache.delete("tasks")
-        return Response(status = 204)
+        return Response(status = status.HTTP_204_NO_CONTENT)
 
